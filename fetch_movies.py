@@ -1,7 +1,7 @@
-import requests
 import re
 import os
 import datetime
+from playwright.sync_api import sync_playwright
 
 current_year = datetime.datetime.utcnow().year
 
@@ -11,11 +11,15 @@ url = (
     f"&country%5B%5D=US&country%5B%5D=GB&language%5B%5D=en"
 )
 
-headers = {"User-Agent": "Mozilla/5.0 (compatible; RSSFeedBot/1.0)"}
-resp = requests.get(url, headers=headers, timeout=30)
-html = resp.text
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page(user_agent="Mozilla/5.0 (compatible; RSSFeedBot/1.0)")
+    page.goto(url, wait_until="networkidle", timeout=60000)
+    # give the JS-rendered grid a moment to fully populate
+    page.wait_for_timeout(3000)
+    html = page.content()
+    browser.close()
 
-# Match each poster image + link + following "rating Title (year)" heading
 pattern = re.compile(
     r'<img[^>]+alt="([^"]+?) poster"[^>]+src="(https://cdn\.bingebase\.com/[^"]+)"[^>]*>'
     r'.*?href="(https://bingebase\.com/movies/[^"]+)"'
