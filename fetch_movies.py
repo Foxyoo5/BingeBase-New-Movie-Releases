@@ -14,9 +14,14 @@ url = (
 with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page(user_agent="Mozilla/5.0 (compatible; RSSFeedBot/1.0)")
-    page.goto(url, wait_until="networkidle", timeout=60000)
-    # give the JS-rendered grid a moment to fully populate
-    page.wait_for_timeout(3000)
+    page.goto(url, wait_until="domcontentloaded", timeout=60000)
+    # wait specifically for a poster image to show up in the grid
+    try:
+        page.wait_for_selector('img[alt*="poster"]', timeout=30000)
+    except Exception as e:
+        print(f"Warning: poster selector never appeared - {e}")
+    # small extra buffer for any late-loading items
+    page.wait_for_timeout(2000)
     html = page.content()
     browser.close()
 
