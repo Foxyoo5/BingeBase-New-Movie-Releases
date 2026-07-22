@@ -43,7 +43,7 @@ pattern = re.compile(
     r'<img[^>]+alt="([^"]+?) poster"[^>]+src="(https://cdn\.bingebase\.com/[^"]+)"'
 )
 
-matches = pattern.findall(html)[:20]
+matches = pattern.findall(html)[:5]
 
 q = chr(34)
 items_xml = ""
