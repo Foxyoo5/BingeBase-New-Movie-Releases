@@ -39,10 +39,8 @@ else:
     browser.close()
 
 pattern = re.compile(
-    r'<img[^>]+alt="([^"]+?) poster"[^>]+src="(https://cdn\.bingebase\.com/[^"]+)"[^>]*>'
-    r'.*?href="(https://bingebase\.com/movies/[^"]+)"'
-    r'.*?<h3[^>]*>\s*([\d.]+)\s+.*?\((\d{4})\)',
-    re.DOTALL
+    r'data-media-card-target="posterLink"[^>]+href="(/movies/[^"]+)"[^>]*>\s*'
+    r'<img[^>]+alt="([^"]+?) poster"[^>]+src="(https://cdn\.bingebase\.com/[^"]+)"'
 )
 
 matches = pattern.findall(html)[:20]
@@ -50,12 +48,13 @@ matches = pattern.findall(html)[:20]
 q = chr(34)
 items_xml = ""
 
-for title, poster, link, rating, year in matches:
+for href, title, poster in matches:
     title_clean = title.replace("&", "&amp;")
+    link = f"https://bingebase.com{href}"
     items_xml += "<item>"
     items_xml += f"<title>{title_clean}</title>"
     items_xml += "<description>" + chr(60) + "![CDATA[" + \
-        f'<img src=' + q + poster + q + f'><br>Rating: {rating}' + \
+        f'<img src=' + q + poster + q + '>' + \
         "]]" + chr(62) + "</description>"
     items_xml += f"<link>{link}</link>"
     items_xml += "</item>"
