@@ -15,27 +15,12 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page(user_agent="Mozilla/5.0 (compatible; RSSFeedBot/1.0)")
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
-    # wait specifically for a poster image to show up in the grid
     try:
         page.wait_for_selector('img[alt*="poster"]', timeout=30000)
     except Exception as e:
         print(f"Warning: poster selector never appeared - {e}")
-    # small extra buffer for any late-loading items
     page.wait_for_timeout(2000)
     html = page.content()
-    # --- DEBUG: print diagnostic info to the Actions log ---
-print(f"HTML length: {len(html)}")
-print(f"Contains 'poster': {'poster' in html}")
-print(f"Number of <img> tags: {html.count('<img')}")
-
-# find the first image whose alt text mentions poster, and print raw context around it
-idx = html.find('poster')
-if idx != -1:
-    print("--- Context around first 'poster' occurrence ---")
-    print(html[max(0, idx-300):idx+300])
-else:
-    print("No 'poster' text found anywhere in the rendered HTML.")
-# --- END DEBUG ---
     browser.close()
 
 pattern = re.compile(
